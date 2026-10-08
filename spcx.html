@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>SPCX · SpaceX 研报 | Maggie</title>
+<style>
+  :root{
+    --bg:#0b0e14; --panel:#121826; --panel2:#0f1520; --border:#1e2735;
+    --text:#e6edf3; --muted:#8b98a9; --dim:#5c6878;
+    --up:#22c55e; --down:#ef4444; --accent:#58a6ff; --gold:#e2b04a;
+    --amber:#f59e0b; --cyan:#38bdf8; --violet:#a78bfa;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.65}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+
+  /* nav */
+  nav{position:sticky;top:0;z-index:99;background:rgba(11,14,20,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+  nav .wrap{display:flex;align-items:center;gap:18px;height:52px;overflow-x:auto;scrollbar-width:none}
+  nav .wrap::-webkit-scrollbar{display:none}
+  nav .brand{font-weight:700;color:var(--text);white-space:nowrap}
+  nav .brand em{font-style:normal;color:var(--gold)}
+  nav a.nl{color:var(--muted);font-size:13px;white-space:nowrap}
+  nav a.nl:hover{color:var(--accent);text-decoration:none}
+  nav .right{margin-left:auto;color:var(--dim);font-size:12px;white-space:nowrap}
+
+  /* hero */
+  header{padding:34px 0 22px;border-bottom:1px solid var(--border);
+    background:radial-gradient(1200px 300px at 20% -10%, rgba(88,166,255,.12), transparent)}
+  .hero{display:flex;flex-wrap:wrap;gap:24px;align-items:flex-end}
+  .hero .l h1{font-size:30px;letter-spacing:.5px}
+  .hero .l h1 small{font-size:15px;color:var(--muted);font-weight:400;margin-left:10px}
+  .hero .l .sub{color:var(--muted);font-size:13px;margin-top:6px}
+  .hero .r{margin-left:auto;text-align:right}
+  .price{font-size:34px;font-weight:700;font-variant-numeric:tabular-nums}
+  .price .chg{font-size:15px;margin-left:8px}
+  .up-t{color:var(--up)} .down-t{color:var(--down)}
+  .hero .r .stamp{color:var(--dim);font-size:12px;margin-top:2px}
+  .verdict{display:inline-block;margin-top:14px;padding:7px 16px;border:1px solid var(--gold);
+    border-radius:999px;color:var(--gold);font-size:14px;font-weight:600;background:rgba(226,176,74,.08)}
+
+  /* kpi */
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:22px 0 8px}
+  .kpi{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+  .kpi .k{color:var(--muted);font-size:12px}
+  .kpi .v{font-size:21px;font-weight:700;margin-top:3px;font-variant-numeric:tabular-nums}
+  .kpi .s{color:var(--dim);font-size:11px;margin-top:2px}
+
+  /* section */
+  section{padding:34px 0 6px}
+  h2.sec{font-size:20px;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+  h2.sec .bar{display:inline-block;width:4px;height:18px;border-radius:2px;background:var(--accent)}
+  h3.sub{font-size:15px;color:var(--muted);margin:20px 0 10px;font-weight:600}
+
+  /* chart */
+  .chartbox{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px}
+  .chartctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+  .chartctl .grp{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+  .chartctl button{background:transparent;border:none;color:var(--muted);padding:5px 14px;font-size:12px;cursor:pointer}
+  .chartctl button.on{background:var(--accent);color:#fff}
+  .legend{margin-left:auto;color:var(--dim);font-size:12px;display:flex;gap:14px;flex-wrap:wrap}
+  .legend i{font-style:normal}
+  .chipma{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:4px}
+  #chartwrap{position:relative}
+  canvas{display:block;width:100%}
+  #tip{position:absolute;pointer-events:none;display:none;background:#0d131d;border:1px solid var(--border);
+    border-radius:10px;padding:10px 12px;font-size:12px;min-width:172px;z-index:10;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+  #tip .d{color:var(--gold);font-weight:600;margin-bottom:4px}
+  #tip table{border-collapse:collapse}
+  #tip td{padding:1px 8px 1px 0;color:var(--muted);font-variant-numeric:tabular-nums}
+  #tip td.v{color:var(--text);text-align:right}
+  .chartstats{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+  .cstat{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:7px 13px;font-size:12px;color:var(--muted)}
+  .cstat b{color:var(--text);margin-left:6px;font-variant-numeric:tabular-nums}
+
+  /* cards */
+  .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px}
+  .card .t{font-weight:700;font-size:15px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .card p{color:var(--muted);font-size:13px}
+  .card ul{list-style:none;margin-top:6px}
+  .card li{color:var(--muted);font-size:13px;padding:4px 0 4px 16px;position:relative}
+  .card li::before{content:"·";position:absolute;left:4px;color:var(--accent);font-weight:700}
+  .tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid var(--border);color:var(--muted)}
+  .tag.b{color:var(--up);border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.08)}
+  .tag.r{color:var(--down);border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.08)}
+  .tag.g{color:var(--gold);border-color:rgba(226,176,74,.4);background:rgba(226,176,74,.08)}
+
+  /* table */
+  table.dt{width:100%;border-collapse:collapse;font-size:13px;background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  table.dt th{background:var(--panel2);color:var(--muted);font-weight:600;text-align:left;padding:10px 14px;border-bottom:1px solid var(--border);white-space:nowrap}
+  table.dt td{padding:10px 14px;border-bottom:1px solid rgba(30,39,53,.6);color:var(--text);font-variant-numeric:tabular-nums}
+  table.dt tr:last-child td{border-bottom:none}
+  table.dt td.mu{color:var(--muted)}
+  .tbl-note{color:var(--dim);font-size:12px;margin-top:8px}
+
+  /* rating bar */
+  .ratebar{display:flex;height:30px;border-radius:8px;overflow:hidden;margin:10px 0 6px;border:1px solid var(--border)}
+  .ratebar div{display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;white-space:nowrap;overflow:hidden}
+  .ratelabel{display:flex;flex-wrap:wrap;gap:14px;color:var(--muted);font-size:12px}
+  .dot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:baseline}
+
+  /* target ruler */
+  .ruler{position:relative;margin:30px 8px 6px;height:6px;border-radius:3px;
+    background:linear-gradient(90deg,#ef4444 0%,#e2b04a 40%,#22c55e 75%,#0ea55e 100%)}
+  .ruler .mk{position:absolute;top:-7px;width:2px;height:20px;background:var(--text)}
+  .ruler .mk span{position:absolute;top:24px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--muted);white-space:nowrap;text-align:center}
+  .ruler .mk.now{width:3px;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+  .ruler .mk.now span{color:var(--accent);font-weight:700}
+
+  /* news two col */
+  .twocol{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+  .news li{padding:8px 0 8px 16px}
+  .news li b{color:var(--text)}
+  .news li .when{color:var(--dim);font-size:11px;margin-left:6px}
+  .good li::before{content:"✓";color:var(--up)}
+  .bad li::before{content:"✕";color:var(--down)}
+
+  /* levels */
+  .lv{display:flex;align-items:center;gap:12px;padding:9px 14px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;background:var(--panel)}
+  .lv .p{font-weight:700;width:74px;font-variant-numeric:tabular-nums}
+  .lv .desc{color:var(--muted);font-size:13px}
+  .lv .pct{margin-left:auto;font-size:12px;font-variant-numeric:tabular-nums;color:var(--muted)}
+
+  /* calendar */
+  .soon{color:var(--amber);font-weight:700}
+
+  /* conclusion */
+  .concl{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--border);border-radius:14px;padding:24px}
+  .concl .head{font-size:17px;font-weight:700;margin-bottom:12px}
+  .concl p{color:var(--muted);font-size:14px;margin-bottom:14px}
+  .watch{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:6px}
+  .watch .w{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--muted)}
+  .watch .w b{color:var(--text);display:block;margin-bottom:3px}
+
+  footer{margin-top:44px;border-top:1px solid var(--border);padding:26px 0 40px;color:var(--dim);font-size:12px}
+  footer .src a{display:inline-block;margin:0 14px 6px 0;color:var(--muted)}
+  .disclaimer{margin-top:14px;padding:12px 16px;border:1px dashed var(--border);border-radius:10px;color:var(--dim)}
+  @media (max-width:640px){
+    .hero .r{margin-left:0;text-align:left}
+    nav .right{display:none}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <span class="brand">🚀 SPCX <em>研报</em></span>
+    <a class="nl" href="#chart">图表</a>
+    <a class="nl" href="#fundamental">基本面</a>
+    <a class="nl" href="#info">信息面</a>
+    <a class="nl" href="#tech">技术面</a>
+    <a class="nl" href="#calendar">日历</a>
+    <a class="nl" href="#conclusion">结论</a>
+    <span class="right">数据快照 2026-10-08 · Maggie</span>
+  </div>
+</nav>
+
+<header>
+  <div class="wrap">
+    <div class="hero">
+      <div class="l">
+        <h1>SpaceX <small>SPCX · NASDAQ · 电信服务/航天</small></h1>
+        <div class="sub">2026-06-12 上市 · 发行价 $135 · 首日 +19% · 史上最大 IPO（募资约 $860 亿，2 倍超额认购）</div>
+        <span class="verdict">一句话：好公司 · 贵股票 · 险时点</span>
+      </div>
+      <div class="r">
+        <div class="price down-t">$167.60 <span class="chg">-2.51%</span></div>
+        <div class="stamp">2026-10-07 美股收盘 · 盘前 $168.17 (+0.3%)</div>
+      </div>
+    </div>
+    <div class="kpis">
+      <div class="kpi"><div class="k">总市值</div><div class="v">$2.21 万亿</div><div class="s">发行估值 $1.78T → +25%</div></div>
+      <div class="kpi"><div class="k">较发行价</div><div class="v up-t">+24.2%</div><div class="s">距 6/16 高点 -25.7%</div></div>
+      <div class="kpi"><div class="k">P/B</div><div class="v">17.4x</div><div class="s">电信行业均值 1.7x · PE(TTM) 为负</div></div>
+      <div class="kpi"><div class="k">2025 收入</div><div class="v">$186.7 亿</div><div class="s">+43% · Starlink 占 61%</div></div>
+      <div class="kpi"><div class="k">2026 Q2 收入</div><div class="v">$78.1 亿</div><div class="s">+92%，大超预期</div></div>
+      <div class="kpi"><div class="k">流通盘</div><div class="v" style="color:var(--amber)">仅 12%</div><div class="s">15.5 亿 / 131.8 亿股，波动放大</div></div>
+      <div class="kpi"><div class="k">机构平均目标价</div><div class="v up-t">$228.65</div><div class="s">+36% · 区间 $140–450</div></div>
+      <div class="kpi"><div class="k">评级共识</div><div class="v up-t">强烈买入</div><div class="s">38 家：29 看多 / 5 持有 / 2 卖出</div></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- ============ CHART ============ -->
+<section id="chart">
+  <h2 class="sec"><span class="bar"></span>价格走势（上市以来日线）</h2>
+  <div class="chartbox">
+    <div class="chartctl">
+      <div class="grp" id="rngGrp">
+        <button data-r="0" class="on">全部</button>
+        <button data-r="40">近 40 日</button>
+        <button data-r="20">近 20 日</button>
+      </div>
+      <div class="grp" id="typGrp">
+        <button data-t="candle" class="on">K 线</button>
+        <button data-t="line">收盘线</button>
+      </div>
+      <div class="legend">
+        <i>🟢涨 🔴跌（国际配色）</i>
+        <i><span class="chipma" style="background:var(--gold)"></span>MA20 <b id="ma20v" style="color:var(--text)"></b></i>
+        <i><span class="chipma" style="background:var(--violet)"></span>MA50 <b id="ma50v" style="color:var(--text)"></b></i>
+      </div>
+    </div>
+    <div id="chartwrap">
+      <canvas id="cv" height="430"></canvas>
+      <div id="tip"></div>
+    </div>
+    <div class="chartstats">
+      <span class="cstat">20 日线<b id="s-ma20"></b></span>
+      <span class="cstat">50 日线<b id="s-ma50"></b></span>
+      <span class="cstat">现价距 MA20<b id="s-dma20"></b></span>
+      <span class="cstat">自 8/3 低点 $104.8<b class="up-t" id="s-low"></b></span>
+      <span class="cstat">距 ATH $225.6<b class="down-t" id="s-ath"></b></span>
+      <span class="cstat">较发行价 $135<b class="up-t" id="s-ipo"></b></span>
+    </div>
+    <div class="tbl-note">10/2、10/5 放量突破（1.2–1.36 亿股 vs 平日 6000–8000 万）；9/18 单日 3.36 亿股天量换手横盘。悬停查看每日明细。</div>
+  </div>
+</section>
+
+<!-- ============ FUNDAMENTAL ============ -->
+<section id="fundamental">
+  <h2 class="sec"><span class="bar"></span>基本面：高速增长、减亏中、估值靠 AI 叙事</h2>
+
+  <h3 class="sub">三大业务板块</h3>
+  <div class="grid3">
+    <div class="card">
+      <div class="t">🚀 Space · 火箭发射 <span class="tag">垄断级</span></div>
+      <p>Falcon 9 复用垄断全球发射市场；Starship 9/28 第 14 飞首次入轨（~275km），部署 26 颗 Starlink V3。Flight 15（10 月底–11 月初）将首次尝试机械臂捕获二级——完全复用是 $200/kg 成本的前提。</p>
+    </div>
+    <div class="card">
+      <div class="t">📡 Connectivity · Starlink <span class="tag b">已盈利</span></div>
+      <p>2025 收入 $114 亿（+~50%，占公司 61%），首次成为第一大收入来源；FCC 新批 15,000 颗卫星，将拍卖 25MHz + 开放 482MHz 直连手机频谱；美联航好评机载网络，印度市场受阻。</p>
+    </div>
+    <div class="card">
+      <div class="t">🧠 AI · 算力 <span class="tag g">估值主引擎</span></div>
+      <p>Q2 AI 收入 $26 亿（+247%）。5 家客户 compute ARR ~$545 亿；本质是裸金属 GPU 租赁，定价 $300–450 亿/GW（新云厂商 3–4 倍），<b style="color:var(--amber)">合同 90 天可解约</b>——稀缺溢价 2027–28 年或收窄。</p>
+    </div>
+  </div>
+
+  <h3 class="sub">财务与一致预期</h3>
+  <table class="dt">
+    <tr><th>报告期</th><th>收入</th><th>同比</th><th>EBIT</th><th>净利润</th><th>EPS</th><th>备注</th></tr>
+    <tr><td>2025 全年</td><td>$186.7 亿</td><td class="up-t">+43%</td><td class="mu">—</td><td class="mu">亏损</td><td class="mu">—</td><td class="mu">Starlink $114 亿（61%），已盈利</td></tr>
+    <tr><td>2026 Q2 实际</td><td>$78.1 亿</td><td class="up-t">+92%</td><td class="up-t">-$1.4 亿（改善 82%）</td><td class="up-t">-$5.4 亿（预期 -$20.8 亿）</td><td>-$0.09</td><td class="mu">大超预期，经营现金流 +$24.2 亿</td></tr>
+    <tr><td>2026 Q3 共识</td><td>$129.1 亿</td><td class="mu">—</td><td class="up-t">+$23.3 亿</td><td class="up-t">+$20.6 亿</td><td class="up-t">+$0.16</td><td class="mu"><b>盈利拐点</b>，11 月初披露</td></tr>
+    <tr><td>2026 Q4 共识</td><td>$199.3 亿</td><td class="mu">—</td><td>+$60.9 亿</td><td>+$58.2 亿</td><td>+$0.46</td><td class="mu">AI 收入加速兑现</td></tr>
+    <tr><td>2027 Q1 共识</td><td>$245.5 亿</td><td class="mu">—</td><td>+$76.0 亿</td><td>+$54.7 亿</td><td>+$0.59</td><td class="mu">年化 ~$982 亿</td></tr>
+  </table>
+  <div class="tbl-note">隐含 2026 全年收入 >$400 亿 → 当前 PS ~50x；按 2027Q1 年化 PS ~22x。盈利拐点被定在 Q3，估值消化速度取决于 AI 合同续签。</div>
+
+  <h3 class="sub">AI 算力合同明细（市场分歧核心）</h3>
+  <div class="card" style="margin-bottom:14px">
+    <ul>
+      <li><b>Anthropic</b>：$12.5 亿/月（F-1 披露合同上限最高 <b>$845 亿</b>——是上限不是 backlog）</li>
+      <li><b>Google</b>：$9.2 亿/月（2026 年 10 月起），TPU 原型卫星已由 Falcon 9 送入轨道（Suncatcher 计划）</li>
+      <li><b>新客户协议</b>：$11.1 亿/月（2026-12-01 起，年化 ~$133 亿）</li>
+      <li><b>Reflection AI</b>：3 年约 $63 亿</li>
+      <li>合计：5 家客户 ARR ~<b>$545 亿</b>；已披露年化合同 ~$410 亿</li>
+    </ul>
+    <p style="margin-top:10px;border-top:1px dashed var(--border);padding-top:10px">⚠️ 争议点：市场把 AI ARR 按 Anthropic 式收入定价，实际是 90 天可解约的算力租赁，且CoreWeave 式「押 GPU 借钱再转租」模式在租金回落情形下回本周期从 ~1 年拉长到 3–4 年。</p>
+  </div>
+
+  <h3 class="sub">资产负债与现金流（Q2 末）</h3>
+  <div class="kpis" style="margin:0 0 14px">
+    <div class="kpi"><div class="k">账上现金</div><div class="v">~$1,000 亿</div><div class="s">IPO $860 亿 + 发债</div></div>
+    <div class="kpi"><div class="k">经营现金流</div><div class="v up-t">+$24.2 亿</div><div class="s">+743%，主业自身造血</div></div>
+    <div class="kpi"><div class="k">投资现金流</div><div class="v down-t">-$177.6 亿</div><div class="s">2026 资本开支 ~$650 亿</div></div>
+    <div class="kpi"><div class="k">总资产 / 负债</div><div class="v">$1,928 / $655 亿</div><div class="s">负债率 34% · 6 月来累计拟再借 $650 亿</div></div>
+  </div>
+
+  <h3 class="sub">机构评级（38 家覆盖，2026-10-07）</h3>
+  <div class="ratebar">
+    <div style="background:#16a34a;width:57.9%" title="买入 22">买入 22</div>
+    <div style="background:#22c55e;width:18.4%" title="跑赢 7">跑赢 7</div>
+    <div style="background:#64748b;width:13.2%" title="持有 5">持有 5</div>
+    <div style="background:#ef4444;width:5.3%" title="卖出 2">卖 2</div>
+    <div style="background:#334155;width:5.2%"></div>
+  </div>
+  <div class="ratelabel">
+    <span><span class="dot" style="background:#16a34a"></span>买入 22</span>
+    <span><span class="dot" style="background:#22c55e"></span>跑赢 7</span>
+    <span><span class="dot" style="background:#64748b"></span>持有 5</span>
+    <span><span class="dot" style="background:#ef4444"></span>卖出 2</span>
+    <span><span class="dot" style="background:#334155"></span>无评级 2</span>
+    <span style="margin-left:auto">电信服务行业排名 <b style="color:var(--gold)">1 / 57</b></span>
+  </div>
+
+  <div style="margin-top:26px">
+    <div class="tbl-note" style="margin:0 0 2px">目标价分布 vs 现价 $167.60</div>
+    <div class="ruler">
+      <div class="mk" style="left:9.5%"><span>$110<br>空头目标</span></div>
+      <div class="mk" style="left:14.6%"><span>$140<br>最低</span></div>
+      <div class="mk now" style="left:25.5%"><span>$167.60<br>现价</span></div>
+      <div class="mk" style="left:47.6%"><span>$228.65<br>均值</span></div>
+      <div class="mk" style="left:64.8%"><span>$225–235<br>多数多头</span></div>
+      <div class="mk" style="left:100%;transform:translateX(-100%)"><span>$450<br>最高</span></div>
+    </div>
+    <div class="tbl-note">多方：Wedbush Ives $225（$400 亿买卡强化 AI 飞轮）、高盛上调目标价；空方：投资人 Mekhantev「$2T 估值是白日梦」Sell $110（负 FCF + 解禁潮）。</div>
+  </div>
+</section>
+
+<!-- ============ INFO ============ -->
+<section id="info">
+  <h2 class="sec"><span class="bar"></span>信息面：催化剂密集，风险同样密集</h2>
+  <div class="twocol">
+    <div class="card">
+      <div class="t" style="color:var(--up)">✓ 利好</div>
+      <ul class="news good">
+        <li><b>Starship 第 14 飞首次入轨</b>（9/28）：~275km 轨道，部署 26 颗 Starlink V3 并组网，「入轨+部署+受控再入」全链路打通<span class="when">09-28</span></li>
+        <li><b>Flight 15 将首次尝试机械臂捕获二级</b>（10 月底–11 月初）——IPO 以来最大单一催化剂，$200/kg 叙事兑现在此一举</li>
+        <li><b>FCC 双响</b>：新批 15,000 颗星链卫星 + 将拍卖 25MHz / 开放 482MHz 直连手机频谱<span class="when">10-07</span></li>
+        <li><b>国防绑定加深</b>：Musk 9/30 出任国防部「Meridian 计划」共同负责人，累计国防订单 >$127 亿；特朗普将授其国家科学奖章</li>
+        <li><b>一周三创纪录</b>：Crew-13 载人、Google TPU 原型卫星入轨、Starship 入轨在 24 小时内接连完成<span class="when">09-28</span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="t" style="color:var(--down)">✕ 利空 / 风险</div>
+      <ul class="news bad">
+        <li><b>$400 亿举债买英伟达 GPU</b>（Apollo 牵头：$100 亿银团 + $300 亿 IG 债）→ CDS 创历史新高、2056 年债券跌至新低、利差接近垃圾级；期限错配（多年期债 vs 90 天可解约合同）<span class="when">10-07</span></li>
+        <li><b>解禁潮压顶</b>：10/9、10/24 各 ~3.28 亿股（历史同规模曾引发 ~4% 回调）；<b>11 月初 Q3 财报后 ~13 亿股</b>（180 天池 28%，最大单批）；12/8 再 ~8 亿股</li>
+        <li><b>宏观逆风</b>：美债收益率创 24 年新高，美联储官员放鹰年内或再加息；10/7 科技股普跌中 SPCX -2.5%</li>
+        <li><b>资金面分歧</b>：Ark（木头姐）减持 SPCX；WSJ 报 Oracle/Broadcom/SpaceX 集体转向私募信贷购 AI 芯片，引发资本开支担忧<span class="when">10-07</span></li>
+        <li><b>海外受阻</b>：印度 Starlink 部署被当地电信寡头阻挠</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TECH ============ -->
+<section id="tech">
+  <h2 class="sec"><span class="bar"></span>技术面：上升通道完好，短线偏热</h2>
+  <div class="grid3">
+    <div class="card">
+      <div class="t">📊 价格结构</div>
+      <p style="font-family:ui-monospace,monospace;font-size:12px;line-height:1.9;color:var(--muted)">
+        $225.6 ─ 6/16 ATH（IPO 首周爆炒）<br>
+        &nbsp;&nbsp;&nbsp;╲&nbsp; 两月单边下跌 -54%<br>
+        $104.8 ── 8/3 恐慌大底<br>
+        &nbsp;&nbsp;&nbsp;╱&nbsp; 8–9 月修复至 140–155 箱体<br>
+        $176.4 ── 10/6 反弹高点（+68%）<br>
+        $167.6 ── 现价（10/7 -2.5%）</p>
+    </div>
+    <div class="card">
+      <div class="t">📐 形态判读</div>
+      <ul>
+        <li>8/3 双底以来<b>上升通道完好</b>，10/2、10/5 放量突破 149–155 箱体，量价配合有效</li>
+        <li>现价站上 20 日线约 <b id="t-ext"></b>，短线超买，追高风险大于回踩</li>
+        <li>流通盘仅 12% + 事件驱动定价（类似特斯拉），日振幅 3–8% 是常态</li>
+        <li>9/18 天量换手不跌，暗示 150 附近有大资金承接</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="t">🎯 关键价位</div>
+      <div class="lv"><span class="p" style="color:var(--amber)">$193–201</span><span class="desc">阻力② · 6 月密集成交区</span><span class="pct" id="lv-r2"></span></div>
+      <div class="lv"><span class="p" style="color:var(--amber)">$171–176</span><span class="desc">阻力① · 本周高点，正上方</span><span class="pct" id="lv-r1"></span></div>
+      <div class="lv"><span class="p" style="color:var(--cyan)">$158–160</span><span class="desc">支撑① · 突破回踩位</span><span class="pct" id="lv-s1"></span></div>
+      <div class="lv"><span class="p" style="color:var(--cyan)">$149–150</span><span class="desc">支撑② · 9 月箱体上沿 / 整数关</span><span class="pct" id="lv-s2"></span></div>
+      <div class="lv"><span class="p" style="color:var(--cyan)">$140–143</span><span class="desc">支撑③ · 8 月平台 + 50 日线</span><span class="pct" id="lv-s3"></span></div>
+      <div class="lv"><span class="p" style="color:var(--cyan)">$104–110</span><span class="desc">大底 · 跌破则趋势反转</span><span class="pct" id="lv-s4"></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CALENDAR ============ -->
+<section id="calendar">
+  <h2 class="sec"><span class="bar"></span>关键日历（未来 8 周定方向）</h2>
+  <table class="dt" id="caltab">
+    <tr><th>日期</th><th>倒计时</th><th>事件</th><th>影响</th></tr>
+    <tr><td>2026-10-09</td><td class="cnt" data-d="2026-10-09"></td><td>解禁 ~3.28 亿股（第一批）</td><td class="mu">历史同规模曾引发 ~4% 回调</td></tr>
+    <tr><td>2026-10-10</td><td class="cnt" data-d="2026-10-10"></td><td>Falcon 9 发射（不早于）</td><td class="mu">常规节奏</td></tr>
+    <tr><td>2026-10-24</td><td class="cnt" data-d="2026-10-24"></td><td>解禁 ~3.28 亿股（第二批）</td><td class="mu">同上</td></tr>
+    <tr><td class="soon">10 月底–11 月初</td><td class="cnt" data-d="2026-10-31"></td><td><b>Starship Flight 15 · 首次机械臂捕获二级</b></td><td class="soon">最大单一催化剂：成功 → 冲 $193–200+；失败 → 回踩支撑区</td></tr>
+    <tr><td class="soon">11 月初（待定）</td><td class="cnt" data-d="2026-11-05"></td><td><b>Q3 财报 + ~13 亿股解禁（最大单批，180 天池 28%）</b></td><td class="soon">财报后两个交易日是方向试金石</td></tr>
+    <tr><td>2026-12-08</td><td class="cnt" data-d="2026-12-08"></td><td>解禁 ~8 亿股</td><td class="mu">年度最后一批大解禁</td></tr>
+  </table>
+</section>
+
+<!-- ============ CONCLUSION ============ -->
+<section id="conclusion">
+  <h2 class="sec"><span class="bar"></span>综合判断</h2>
+  <div class="concl">
+    <div class="head">这是一只「概率加权期权」，不是盈利兑现型股票。</div>
+    <p>$2.2T 估值里，火箭 + Starlink 给 ~$1.4T 属合理（垄断性发射 + Starlink 已盈利），多出来的部分几乎全是 AI 算力叙事——租金 3–5 倍溢价能否持续、$400 亿杠杆买卡能否收回，2027 年见分晓。$170 隐含 $2.2–2.3T，处于「中性偏乐观」公允区间<b style="color:var(--text)">上沿</b>；多头极限情形 $2.5–2.6T（$190–195）。</p>
+    <p><b style="color:var(--text)">短期（1 个月）</b>：风险收益比一般。放量冲高后连涨透支，正上方 $171–176 是阻力，而 10/9、10/24 两批解禁在即。等 $149–160 回踩区间比追 $168 更划算；跌破 $158 看 $143。</p>
+    <p><b style="color:var(--text)">中期（3–6 个月）</b>：赌 Flight 15 二级捕获（成功则 $200/kg 叙事兑现，冲 $193–200+）和 Q3 首次盈利——但同日 13 亿股解禁是最大抛压测试。卖方共识 $228 有基本面支撑，前提是消化解禁。</p>
+    <div class="watch">
+      <div class="w"><b>① Flight 15</b>能否两级全复用（10 月底–11 月初）</div>
+      <div class="w"><b>② IG 债利差</b>CDS 已创新高，融资成本是 AI 故事的地基</div>
+      <div class="w"><b>③ 新算力订单</b>需赶在 2027 年芯片到货、溢价收窄之前</div>
+      <div class="w"><b>④ 美债利率拐点</b>收益率 24 年新高 + 年内加息预期压制成长股</div>
+    </div>
+  </div>
+</section>
+
+</div><!-- /wrap -->
+
+<footer>
+  <div class="wrap">
+    <div class="src">
+      资料来源：
+      <a href="https://www.cnbc.com/2026/06/12/spacex-ipo-spcx-live-updates.html" target="_blank">CNBC IPO Live</a>
+      <a href="https://www.npr.org/2026/06/12/nx-s1-5855004/stock-ai-spacex-ipo-elon-musk" target="_blank">NPR</a>
+      <a href="https://longbridge.com/topics/44216388" target="_blank">海豚投研复盘（Longbridge）</a>
+      <a href="https://longbridge.com/news/301199018" target="_blank">Ives $225 目标价</a>
+      <a href="https://longbridge.com/news/301175097" target="_blank">$40B 债务与 CDS</a>
+      <a href="https://longbridge.com/news/301186565" target="_blank">WSJ：AI 芯片举债潮</a>
+      <a href="https://longbridge.com/news/301198223" target="_blank">空头观点 $110</a>
+      <a href="https://longbridge.com/news/301184356" target="_blank">FCC 批准 15000 颗卫星</a>
+      <a href="https://www.tbsnews.net" target="_blank">FT（via TBS）</a>
+    </div>
+    <div class="disclaimer">
+      ⚠️ 本页为个人研究笔记，数据快照取自 Longbridge 行情、公司财报及公开新闻（截至 2026-10-08 北京时间），可能存在滞后或误差；不构成任何投资建议。行情图表由页面内嵌脚本本地渲染，无外部依赖。
+    </div>
+    <div style="margin-top:16px">Maggie · 生成于 2026-10-08 · <a href="./">← 返回研报看板</a></div>
+  </div>
+</footer>
+
+<script>
+/* ===== 数据：2026-06-12 上市以来日线 [date, open, high, low, close, volume] ===== */
+const DATA = [
+["2026-06-12",150.00,176.52,149.34,160.95,522131790],
+["2026-06-15",171.74,193.00,168.35,192.50,256226632],
+["2026-06-16",200.51,225.64,195.13,201.80,322149250],
+["2026-06-17",209.84,213.80,187.01,191.82,201719498],
+["2026-06-18",188.39,190.00,172.11,185.00,272126781],
+["2026-06-22",176.04,176.75,154.00,154.60,169183799],
+["2026-06-23",151.06,165.50,147.11,156.11,155848109],
+["2026-06-24",154.20,159.86,150.72,154.54,76101541],
+["2026-06-25",156.63,160.65,150.00,153.00,62212435],
+["2026-06-26",150.62,158.40,148.51,153.23,126932861],
+["2026-06-29",157.36,166.17,151.74,164.19,81443101],
+["2026-06-30",163.38,172.40,161.64,170.86,82047546],
+["2026-07-01",171.57,171.74,155.00,157.54,109317597],
+["2026-07-02",159.73,162.16,155.88,162.00,61257120],
+["2026-07-06",165.95,167.90,155.04,160.42,188831328],
+["2026-07-07",158.92,159.30,148.86,149.47,83779737],
+["2026-07-08",152.55,152.93,145.20,148.30,60949410],
+["2026-07-09",150.45,153.50,147.59,152.16,46908792],
+["2026-07-10",150.13,150.57,145.07,145.30,46825995],
+["2026-07-13",144.70,144.92,136.78,139.14,71456511],
+["2026-07-14",140.95,143.33,135.52,136.08,46694833],
+["2026-07-15",137.51,139.34,132.15,135.27,58040919],
+["2026-07-16",135.01,137.76,130.74,131.11,58725579],
+["2026-07-17",127.43,130.33,122.12,123.99,83706220],
+["2026-07-20",125.29,125.70,119.68,119.85,57337250],
+["2026-07-21",122.11,129.88,120.36,123.54,79718078],
+["2026-07-22",123.29,124.77,115.19,115.26,92731796],
+["2026-07-23",115.21,118.55,110.85,118.24,75246453],
+["2026-07-24",116.01,117.00,111.40,115.07,56786082],
+["2026-07-27",113.50,114.85,108.66,113.50,64540679],
+["2026-07-28",109.32,118.13,107.01,116.41,81714250],
+["2026-07-29",114.40,117.59,110.35,112.55,53995189],
+["2026-07-30",115.14,118.93,111.35,112.20,56007950],
+["2026-07-31",113.10,113.64,107.57,108.37,58835713],
+["2026-08-03",106.40,114.92,104.83,114.53,70524025],
+["2026-08-04",117.33,126.71,115.72,125.33,144130084],
+["2026-08-05",112.37,117.50,106.66,108.27,208488385],
+["2026-08-06",107.09,115.75,105.11,114.92,255176620],
+["2026-08-07",114.97,133.48,114.53,133.11,242130745],
+["2026-08-10",134.95,139.26,130.17,138.74,169934327],
+["2026-08-11",138.66,139.98,130.50,133.29,108900589],
+["2026-08-12",135.05,149.60,134.01,146.15,167236422],
+["2026-08-13",143.75,145.05,139.76,141.29,120282152],
+["2026-08-14",142.90,144.02,135.50,140.00,96727761],
+["2026-08-17",139.98,149.80,139.58,146.23,116675369],
+["2026-08-18",140.73,146.46,139.41,143.34,84190976],
+["2026-08-19",144.96,145.01,136.72,139.65,76612316],
+["2026-08-20",137.29,137.88,130.39,134.00,119813167],
+["2026-08-21",134.32,137.35,131.22,136.97,78808308],
+["2026-08-24",134.36,138.33,133.10,135.00,60188375],
+["2026-08-25",136.94,139.75,136.10,137.95,53075008],
+["2026-08-26",137.00,140.18,135.10,139.63,61380487],
+["2026-08-27",139.99,142.06,138.60,140.87,55268829],
+["2026-08-28",139.83,143.29,137.90,141.50,55111222],
+["2026-08-31",140.08,144.14,139.88,143.69,63145017],
+["2026-09-01",141.87,145.23,141.17,142.23,53808127],
+["2026-09-02",142.68,143.10,138.17,140.71,49903663],
+["2026-09-03",141.36,152.30,141.05,149.74,121333582],
+["2026-09-04",148.59,150.85,147.32,147.95,49122393],
+["2026-09-08",149.05,155.00,145.14,153.47,85840673],
+["2026-09-09",152.04,153.00,145.55,147.55,120593462],
+["2026-09-10",145.00,154.70,144.89,148.18,118598930],
+["2026-09-11",150.01,151.85,145.92,151.21,79273366],
+["2026-09-14",147.33,152.56,146.00,148.15,67860995],
+["2026-09-15",148.45,148.55,142.87,143.49,72746773],
+["2026-09-16",144.88,153.01,144.36,150.88,108770003],
+["2026-09-17",153.80,156.87,152.63,154.81,83986353],
+["2026-09-18",154.60,156.60,149.93,152.71,335670483],
+["2026-09-21",154.77,158.13,151.60,151.85,82283679],
+["2026-09-22",151.70,154.94,150.55,154.72,59197631],
+["2026-09-23",153.28,154.26,147.89,148.36,60641577],
+["2026-09-24",148.20,149.00,145.88,148.03,72721441],
+["2026-09-25",148.38,149.67,146.00,148.68,54595189],
+["2026-09-28",148.49,150.80,145.36,145.47,83516666],
+["2026-09-29",146.68,150.06,145.47,149.24,80056715],
+["2026-09-30",148.68,152.58,147.75,150.86,79614173],
+["2026-10-01",150.56,153.78,146.03,148.07,69092538],
+["2026-10-02",149.57,159.84,149.34,158.96,119859134],
+["2026-10-05",158.99,172.47,158.62,171.09,135688935],
+["2026-10-06",172.01,176.42,171.39,171.92,106952443],
+["2026-10-07",168.13,171.31,165.65,167.60,77473018]
+];
+
+const CLOSE = DATA.map(d=>d[4]);
+function maAt(idx,n){ if(idx<n-1) return null; let s=0; for(let i=idx-n+1;i<=idx;i++) s+=CLOSE[i]; return s/n; }
+const MA20 = CLOSE.map((_,i)=>maAt(i,20));
+const MA50 = CLOSE.map((_,i)=>maAt(i,50));
+const LAST = CLOSE[CLOSE.length-1];
+
+/* 关键事件标注 */
+const EVENTS = [
+  {d:"2026-09-18", t:"天量换手 3.36 亿股", side:"above"},
+  {d:"2026-09-28", t:"Starship 首入轨", side:"below"},
+  {d:"2026-10-02", t:"放量突破 +7.4%", side:"above"}
+];
+/* 水平价位线 */
+const LEVELS = [
+  {p:225.64, t:"ATH · 强阻力", c:"#f59e0b"},
+  {p:193.00, t:"阻力② 6月密集区", c:"#f59e0b"},
+  {p:176.40, t:"阻力① 本周高点", c:"#f59e0b"},
+  {p:158.00, t:"支撑① 突破回踩", c:"#38bdf8"},
+  {p:143.00, t:"支撑② 8月平台", c:"#38bdf8"},
+  {p:104.83, t:"大底", c:"#38bdf8"}
+];
+
+let rangeN = 0, ctype = "candle", crossIdx = -1;
+const cv = document.getElementById("cv"), ctx = cv.getContext("2d"), tip = document.getElementById("tip");
+
+function draw(){
+  const W = cv.parentElement.clientWidth, H = 430, dpr = window.devicePixelRatio||1;
+  cv.width = W*dpr; cv.height = H*dpr; cv.style.height = H+"px";
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,W,H);
+
+  const data = rangeN? DATA.slice(-rangeN) : DATA;
+  const ma20 = rangeN? MA20.slice(-rangeN) : MA20;
+  const ma50 = rangeN? MA50.slice(-rangeN) : MA50;
+  const n = data.length;
+
+  const padR=54, padL=6, padT=26, padB=22;
+  const plotW = W-padL-padR, mainH = (H-padT-padB)*0.74, volTop = padT+mainH+6, volH = H-padB-volTop-2;
+  let lo=1e9,hi=0,vmax=0;
+  data.forEach(d=>{lo=Math.min(lo,d[3]);hi=Math.max(hi,d[2]);vmax=Math.max(vmax,d[5]);});
+  lo=Math.floor((lo-4)/10)*10; hi=Math.ceil((hi+4)/10)*10;
+  const Y=p=>padT+(hi-p)/(hi-lo)*mainH;
+  const X=i=>padL+(i+0.5)*plotW/n;
+  const bw=Math.max(1.5,plotW/n*0.62);
+
+  /* grid + price labels */
+  ctx.font="11px -apple-system,PingFang SC,sans-serif"; ctx.textBaseline="middle";
+  for(let p=Math.ceil(lo/20)*20;p<=hi;p+=20){
+    ctx.strokeStyle="rgba(30,39,53,.55)"; ctx.beginPath();
+    ctx.moveTo(padL,Y(p)); ctx.lineTo(W-padR+4,Y(p)); ctx.stroke();
+    ctx.fillStyle="#5c6878"; ctx.textAlign="left"; ctx.fillText(p, W-padR+10, Y(p));
+  }
+
+  /* level lines */
+  LEVELS.forEach(L=>{
+    if(L.p<lo||L.p>hi) return;
+    const y=Y(L.p);
+    ctx.strokeStyle=L.c+"88"; ctx.setLineDash([5,4]); ctx.beginPath();
+    ctx.moveTo(padL,y); ctx.lineTo(W-padR,y); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle=L.c; ctx.textAlign="left";
+    ctx.fillText(L.t+" $"+L.p.toFixed(0), padL+4, y-8);
+  });
+
+  /* x labels */
+  ctx.fillStyle="#5c6878"; ctx.textAlign="center";
+  const step=Math.max(1,Math.round(n/8));
+  for(let i=0;i<n;i+=step){ const d=data[i][0].slice(5); ctx.fillText(d, X(i), H-8); }
+
+  /* volume */
+  data.forEach((d,i)=>{
+    const h=d[5]/vmax*volH;
+    ctx.fillStyle=(d[4]>=d[1])?"rgba(34,197,94,.45)":"rgba(239,68,68,.45)";
+    ctx.fillRect(X(i)-bw/2, volTop+volH-h, bw, h);
+  });
+  ctx.strokeStyle="rgba(30,39,53,.8)"; ctx.beginPath();
+  ctx.moveTo(padL,volTop-2); ctx.lineTo(W-padR,volTop-2); ctx.stroke();
+
+  /* candles or line */
+  if(ctype==="candle"){
+    data.forEach((d,i)=>{
+      const up=d[4]>=d[1], col=up?"#22c55e":"#ef4444", x=X(i);
+      ctx.strokeStyle=col; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(x,Y(d[2])); ctx.lineTo(x,Y(d[3])); ctx.stroke();
+      const yo=Y(d[1]), yc=Y(d[4]);
+      ctx.fillStyle=col;
+      ctx.fillRect(x-bw/2, Math.min(yo,yc), bw, Math.max(1,Math.abs(yc-yo)));
+    });
+  }else{
+    ctx.strokeStyle="#58a6ff"; ctx.lineWidth=1.8; ctx.beginPath();
+    data.forEach((d,i)=>{ i?ctx.lineTo(X(i),Y(d[4])):ctx.moveTo(X(i),Y(d[4])); });
+    ctx.stroke();
+  }
+
+  /* MA lines */
+  [[ma20,"#e2b04a"],[ma50,"#a78bfa"]].forEach(([arr,c])=>{
+    ctx.strokeStyle=c; ctx.lineWidth=1.3; ctx.beginPath(); let started=false;
+    arr.forEach((v,i)=>{ if(v==null) return; const x=X(i),y=Y(v);
+      started?ctx.lineTo(x,y):(ctx.moveTo(x,y),started=true); });
+    ctx.stroke();
+  });
+
+  /* event annotations */
+  EVENTS.forEach(ev=>{
+    const gi=DATA.findIndex(d=>d[0]===ev.d); if(gi<0) return;
+    const li=gi-(DATA.length-n); if(li<0||li>=n) return;
+    const d=data[li], x=X(li);
+    if(ev.side==="above"){
+      const y=Y(d[2])-6;
+      ctx.fillStyle="#f5c451"; ctx.beginPath(); ctx.arc(x,y-8,2.5,0,7); ctx.fill();
+      ctx.fillStyle="#f5c451"; ctx.textAlign="center"; ctx.fillText(ev.t, x, y-22);
+    }else{
+      const y=Y(d[3])+6;
+      ctx.fillStyle="#38bdf8"; ctx.beginPath(); ctx.arc(x,y+8,2.5,0,7); ctx.fill();
+      ctx.fillStyle="#38bdf8"; ctx.textAlign="center"; ctx.fillText(ev.t, x, y+22);
+    }
+  });
+
+  /* last price tag */
+  const lastY=Y(data[n-1][4]);
+  ctx.fillStyle="#58a6ff"; ctx.fillRect(W-padR+4, lastY-9, padR-6, 18);
+  ctx.fillStyle="#fff"; ctx.textAlign="left"; ctx.font="bold 11px -apple-system,sans-serif";
+  ctx.fillText(data[n-1][4].toFixed(2), W-padR+8, lastY);
+
+  /* crosshair */
+  if(crossIdx>=0 && crossIdx<n){
+    const x=X(crossIdx);
+    ctx.strokeStyle="rgba(139,152,169,.5)"; ctx.setLineDash([3,3]); ctx.beginPath();
+    ctx.moveTo(x,padT); ctx.lineTo(x,H-padB); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle="#e6edf3"; ctx.beginPath(); ctx.arc(x,Y(data[crossIdx][4]),3,0,7); ctx.fill();
+  }
+}
+
+/* tooltip */
+cv.addEventListener("mousemove",e=>{
+  const r=cv.getBoundingClientRect();
+  const data=rangeN?DATA.slice(-rangeN):DATA, n=data.length;
+  const padR=54,padL=6; const plotW=r.width-padL-padR;
+  let i=Math.floor((e.clientX-r.left-padL)/plotW*n);
+  if(i<0||i>=n){crossIdx=-1;tip.style.display="none";draw();return;}
+  crossIdx=i; draw();
+  const d=data[i], prev=i>0?data[i-1][4]:d[1], chg=(d[4]/prev-1)*100;
+  const v=(d[5]/1e8).toFixed(2);
+  tip.innerHTML=`<div class="d">${d[0]}</div><table>
+    <tr><td>开 / 高 / 低</td><td class="v">${d[1].toFixed(2)} / ${d[2].toFixed(2)} / ${d[3].toFixed(2)}</td></tr>
+    <tr><td>收盘</td><td class="v" style="color:${chg>=0?"#22c55e":"#ef4444"}">${d[4].toFixed(2)}（${chg>=0?"+":""}${chg.toFixed(2)}%）</td></tr>
+    <tr><td>成交量</td><td class="v">${v} 亿股</td></tr>
+    <tr><td>MA20</td><td class="v">${(rangeN?MA20.slice(-rangeN):MA20)[i]!=null?((rangeN?MA20.slice(-rangeN):MA20)[i]).toFixed(2):"—"}</td></tr></table>`;
+  tip.style.display="block";
+  const tw=tip.offsetWidth;
+  let tx=e.clientX-r.left+16; if(tx+tw>r.width-8) tx=e.clientX-r.left-tw-16;
+  tip.style.left=tx+"px"; tip.style.top=Math.max(4,e.clientY-r.top-60)+"px";
+});
+cv.addEventListener("mouseleave",()=>{crossIdx=-1;tip.style.display="none";draw();});
+
+/* controls */
+document.querySelectorAll("#rngGrp button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("#rngGrp button").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on"); rangeN=+b.dataset.r; crossIdx=-1; tip.style.display="none"; draw();
+});
+document.querySelectorAll("#typGrp button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("#typGrp button").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on"); ctype=b.dataset.t; draw();
+});
+window.addEventListener("resize",draw);
+
+/* stats fill */
+(function(){
+  const m20=MA20[MA20.length-1], m50=MA50[MA50.length-1];
+  const f=(x)=>x.toFixed(1), pc=(a,b)=>((a/b-1)*100).toFixed(1)+"%";
+  document.getElementById("ma20v").textContent="$"+f(m20);
+  document.getElementById("ma50v").textContent="$"+f(m50);
+  document.getElementById("s-ma20").textContent="$"+f(m20);
+  document.getElementById("s-ma50").textContent="$"+f(m50);
+  document.getElementById("s-dma20").textContent="+"+pc(LAST,m20).replace("+","")+"（偏热）";
+  const e1=document.getElementById("s-dma20"); e1.className=LAST/m20-1>0.08?"":"up-t";
+  document.getElementById("s-low").textContent="+"+pc(LAST,104.83);
+  document.getElementById("s-ath").textContent="-"+pc(LAST,225.64).replace("-","");
+  document.getElementById("s-ipo").textContent="+"+pc(LAST,135);
+  document.getElementById("t-ext").textContent=((LAST/m20-1)*100).toFixed(1)+"%";
+  const lvl=(id,p)=>{document.getElementById(id).textContent=((LAST/p-1)*100).toFixed(1)+"%";};
+  lvl("lv-r2",197); lvl("lv-r1",173.5); lvl("lv-s1",159); lvl("lv-s2",149.5); lvl("lv-s3",141.5); lvl("lv-s4",107);
+  /* countdown */
+  const today=new Date("2026-10-08");
+  document.querySelectorAll(".cnt").forEach(el=>{
+    const t=new Date(el.dataset.d), dd=Math.ceil((t-today)/864e5);
+    el.innerHTML=dd>0?`<b style="color:var(--amber)">${dd} 天</b>`:"—";
+  });
+  draw();
+})();
+</script>
+</body>
+</html>
