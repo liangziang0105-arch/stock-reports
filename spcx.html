@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-theme="a">
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,14 +7,6 @@
 <title>SPCX · SpaceX 研报 | Maggie</title>
 <style>
   :root{
-    --bg:#faf9f6; --panel:#ffffff; --panel2:#f4f1ea; --border:#e5e0d4;
-    --text:#211f1a; --muted:#6d685c; --dim:#a09a8b;
-    --up:#1a7f37; --down:#cf222e; --accent:#1d4ed8; --gold:#9a6700;
-    --amber:#b45309; --cyan:#0e7490; --violet:#7c3aed;
-    --grid:rgba(33,31,26,.08); --navbg:rgba(250,249,246,.94); --tipbg:#ffffff;
-    --hero:rgba(29,78,216,.05);
-  }
-  [data-theme="b"]{
     --bg:#f4f7fb; --panel:#ffffff; --panel2:#edf2f9; --border:#dbe4f0;
     --text:#101828; --muted:#5a6b85; --dim:#98a6bd;
     --up:#12a150; --down:#f04438; --accent:#2563eb; --gold:#d97706;
@@ -22,32 +14,9 @@
     --grid:rgba(16,24,40,.07); --navbg:rgba(244,247,251,.94); --tipbg:#ffffff;
     --hero:rgba(37,99,235,.06);
   }
-  [data-theme="c"]{
-    --bg:#f6efe3; --panel:#fdf8ee; --panel2:#f0e6d2; --border:#e0d3b8;
-    --text:#3b2f1d; --muted:#7c6c4f; --dim:#ab9a79;
-    --up:#2e7d32; --down:#c0392b; --accent:#b45309; --gold:#92670c;
-    --amber:#b45309; --cyan:#0e7490; --violet:#6d28d9;
-    --grid:rgba(59,47,29,.08); --navbg:rgba(246,239,227,.94); --tipbg:#fdf8ee;
-    --hero:rgba(180,83,9,.06);
-  }
-  [data-theme="d"]{
-    --bg:#ffffff; --panel:#ffffff; --panel2:#f7f7f7; --border:#d9d9d9;
-    --text:#111111; --muted:#5f5f5f; --dim:#9a9a9a;
-    --up:#0a7d43; --down:#d92d20; --accent:#111111; --gold:#8a6d1a;
-    --amber:#c2410c; --cyan:#1d4ed8; --violet:#5b21b6;
-    --grid:rgba(0,0,0,.09); --navbg:rgba(255,255,255,.95); --tipbg:#ffffff;
-    --hero:rgba(0,0,0,.025);
-  }
-  [data-theme="a"] h1, [data-theme="a"] h2.sec, [data-theme="a"] .concl .head{
-    font-family:Georgia,"Times New Roman","Songti SC","STSong",serif;
-  }
-  [data-theme="b"] .card, [data-theme="b"] .kpi, [data-theme="b"] .chartbox, [data-theme="b"] table.dt{
+  .card, .kpi, .chartbox, table.dt{
     box-shadow:0 1px 3px rgba(16,24,40,.06);
   }
-  [data-theme="d"] h1{font-weight:800;letter-spacing:-.5px}
-  [data-theme="d"] h2.sec{font-weight:800}
-  [data-theme="d"] .kpi .v{font-weight:800}
-  [data-theme="d"] .price{font-weight:800}
 
   *{margin:0;padding:0;box-sizing:border-box}
   html{scroll-behavior:smooth}
@@ -162,22 +131,12 @@
   .watch .w{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--muted)}
   .watch .w b{color:var(--text);display:block;margin-bottom:3px}
 
-  /* theme switcher */
-  #themebar{position:fixed;right:16px;bottom:16px;z-index:200;display:flex;align-items:center;gap:4px;
-    background:var(--panel);border:1px solid var(--border);border-radius:999px;padding:6px 8px;
-    box-shadow:0 6px 22px rgba(0,0,0,.14)}
-  #themebar .lb{font-size:11px;color:var(--dim);padding:0 4px 0 6px}
-  #themebar button{border:1px solid transparent;background:transparent;color:var(--muted);
-    font-size:12px;padding:4px 12px;border-radius:999px;cursor:pointer;white-space:nowrap}
-  #themebar button.on{background:var(--accent);color:#fff}
-
   footer{margin-top:44px;border-top:1px solid var(--border);padding:26px 0 60px;color:var(--dim);font-size:12px}
   footer .src a{display:inline-block;margin:0 14px 6px 0;color:var(--muted)}
   .disclaimer{margin-top:14px;padding:12px 16px;border:1px dashed var(--border);border-radius:10px;color:var(--dim)}
   @media (max-width:640px){
     .hero .r{margin-left:0;text-align:left}
     nav .right{display:none}
-    #themebar{right:8px;bottom:8px;flex-wrap:wrap;border-radius:16px;justify-content:center}
   }
 </style>
 </head>
@@ -437,14 +396,6 @@
 
 </div><!-- /wrap -->
 
-<div id="themebar">
-  <span class="lb">配色</span>
-  <button data-th="a">A 纸白研报</button>
-  <button data-th="b">B 清爽蓝</button>
-  <button data-th="c">C 暖米纸</button>
-  <button data-th="d">D 极简黑白</button>
-</div>
-
 <footer>
   <div class="wrap">
     <div class="src">
@@ -467,26 +418,12 @@
 </footer>
 
 <script>
-/* ===== 主题切换（图表颜色随 CSS 变量实时重绘） ===== */
+/* ===== 主题色（图表从 CSS 变量取色） ===== */
 function CVARS(){
   const s=getComputedStyle(document.documentElement), g=k=>s.getPropertyValue(k).trim();
   return {up:g('--up'),down:g('--down'),accent:g('--accent'),gold:g('--gold'),violet:g('--violet'),
           amber:g('--amber'),cyan:g('--cyan'),dim:g('--dim'),grid:g('--grid'),text:g('--text')};
 }
-function setTheme(id,save){
-  document.documentElement.dataset.theme=id;
-  document.querySelectorAll("#themebar button").forEach(b=>b.classList.toggle("on",b.dataset.th===id));
-  if(save){try{localStorage.setItem("spcx-theme",id)}catch(e){}}
-  if(typeof draw==="function") draw();
-}
-document.querySelectorAll("#themebar button").forEach(b=>b.onclick=()=>setTheme(b.dataset.th,true));
-(function(){
-  let t=null;
-  try{t=localStorage.getItem("spcx-theme")}catch(e){}
-  const q=new URLSearchParams(location.search).get('t');
-  const pick=(q&&"abcd".includes(q))?q:(t||"a");
-  if(pick!=="a") setTheme(pick,false);
-})();
 
 /* ===== 数据：2026-06-12 上市以来日线 [date, open, high, low, close, volume] ===== */
 const DATA = [
